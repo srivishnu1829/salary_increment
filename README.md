@@ -26,7 +26,7 @@ def execute(spark, glueContext, args):
     .option("driver", "org.postgresql.Driver") \
     .load()
 
-    # base_df = spark.read.csv('s3://eastpoint-files/sal_inc/flat_data (1).csv', header=True)
+    
     base_df = base_df.withColumn('employee_id', F.sha2(F.concat(F.col('first_name'), F.col('last_name')), 256)).withColumn('department_id', F.sha2(F.col('dept_name'), 256)).withColumn('updated_salary', (F.col('salary') + (F.col('salary') * (F.col('salary_increment')/100))).cast('integer'))
 
     emp_df = base_df.select('employee_id' ,'first_name', 'last_name', 'salary', 'department_id')
