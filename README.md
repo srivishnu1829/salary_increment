@@ -17,14 +17,12 @@ from awsglue.utils import getResolvedOptions
 
 def execute(spark, glueContext, args):
     
-    base_df = spark.read \
-    .format("jdbc") \
-    .option("url", "jdbc:postgresql://localhost:5432/databasepost") \
-    .option("dbtable", "postdb") \
-    .option("user", "user1") \
-    .option("password", "welcome123") \
-    .option("driver", "org.postgresql.Driver") \
-    .load()
+    properties = {
+    "user" : "<username>",
+    "password" : "<password>"
+    }
+    df = spark.read.jdbc(url= "jdbc:postgresql://<rds_host_name>/<database_name>", table="<schema.table>", properties=properties)
+   
 
     
     base_df = base_df.withColumn('employee_id', F.sha2(F.concat(F.col('first_name'), F.col('last_name')), 256)).withColumn('department_id', F.sha2(F.col('dept_name'), 256)).withColumn('updated_salary', (F.col('salary') + (F.col('salary') * (F.col('salary_increment')/100))).cast('integer'))
@@ -42,13 +40,13 @@ def execute(spark, glueContext, args):
     updated_salary_dy = DynamicFrame.fromDF(updated_salary_df, glueContext, "updated_salary_df")
    
 
-    # glueContext.write_dynamic_frame.from_jdbc_conf(frame = dept_dy, catalog_connection = "redshift", connection_options = {"dbtable": "legends.department", "database": "dev"}, redshift_tmp_dir = args["TempDir"], transformation_ctx = "legend_contact_newrecords_insert")
+    glueContext.write_dynamic_frame.from_jdbc_conf(frame = dept_dy, catalog_connection = "redshift", connection_options = {"dbtable": "legends.department", "database": "dev"}, redshift_tmp_dir = args["TempDir"], transformation_ctx = "legend_contact_newrecords_insert")
 
-    # glueContext.write_dynamic_frame.from_jdbc_conf(frame = emp_dy, catalog_connection = "redshift", connection_options = {"dbtable": "legends.employee", "database": "dev"}, redshift_tmp_dir = args["TempDir"], transformation_ctx = "legend_contact_newrecords_insert")
+    glueContext.write_dynamic_frame.from_jdbc_conf(frame = emp_dy, catalog_connection = "redshift", connection_options = {"dbtable": "legends.employee", "database": "dev"}, redshift_tmp_dir = args["TempDir"], transformation_ctx = "legend_contact_newrecords_insert")
 
-    # glueContext.write_dynamic_frame.from_jdbc_conf(frame = updated_salary_dy, catalog_connection = "redshift", connection_options = {"dbtable": "legends.updated_salary", "database": "dev"}, redshift_tmp_dir = args["TempDir"], transformation_ctx = "legend_contact_newrecords_insert")
+    glueContext.write_dynamic_frame.from_jdbc_conf(frame = updated_salary_dy, catalog_connection = "redshift", connection_options = {"dbtable": "legends.updated_salary", "database": "dev"}, redshift_tmp_dir = args["TempDir"], transformation_ctx = "legend_contact_newrecords_insert")
 
-    updated_salary_df.write.csv("s3://eastpoint-files/sal_inc/new.csv",header=True,mode="overwrite")
+    
     
 def main():
 
