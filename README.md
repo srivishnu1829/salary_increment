@@ -19,7 +19,7 @@ def execute(spark, glueContext, args):
     
     base_df = spark.read \
     .format("jdbc") \
-    .option("url", "jdbc:postgresql://localhost:5432/databasename") \
+    .option("url", "jdbc:postgresql://localhost:5432/databasepost") \
     .option("dbtable", "postdb") \
     .option("user", "user1") \
     .option("password", "welcome123") \
